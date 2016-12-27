@@ -1,21 +1,28 @@
-#include <Windows.h>
+#ifdef _WIN32
+   #include <Windows.h>
+   #include <SDL.h>
+   #ifdef _WIN64
+   #endif
+#elif __APPLE__
+    #include <SDL2/SDL.h>
+#endif
+
 #include <iostream>
 #include <fstream>
 #include <exception>
 #include <string>
-#include <random>
-#include <SDL.h>
+#include <thread>
+#include <chrono>
+
 #include "GIFReader.h"
 
 int main(int argc, char** argv) {
-	SDL_Event event;
-
-  //std::string gifPath = "D:\\Code\\gifPractice\\GIFs\\gif000.gif";
-  std::string gifPath = "D:\\Code\\gifPractice\\GIFs\\gif000.gif";
-  //std::string gifPath = argv[1];
+  std::string gifPath = "/Users/tianyulang/code/GIF/GIFs/gif000.gif";
+  SDL_Event event;
+    
   std::ifstream gifFile(gifPath, std::ios_base::in | std::ios_base::binary);
   if (!gifFile.is_open()) {
-    throw std::exception("Cannot open GIF file. Bad path!");
+    throw std::runtime_error("Cannot open GIF file. Bad path!");
   }
   GIFReader gifReader(gifFile);
   GIFFile result;
@@ -76,8 +83,7 @@ int main(int argc, char** argv) {
       }
       SDL_RenderPresent(ren);
       imageIndex = (imageIndex + 1) % result.images.size();
-      Sleep(image.delay * 10);
-      //Sleep(5000);
+      std::this_thread::sleep_for(std::chrono::milliseconds(image.delay * 10));
     }
     SDL_DestroyRenderer(ren);
     SDL_DestroyWindow(win);
