@@ -20,17 +20,15 @@ void drawImage(GIFFile& result, GIFImage& image, SDL_Renderer* ren) {
       uint8_t colorCode = image.data[image.width * j + i];
       colorCode = colorCode < colorTable.size() ? colorCode : 0;
       Pixel& color = colorTable[colorCode];
-      if (colorCode != image.transparentIndex) {
-        SDL_SetRenderDrawColor(ren, color.red, color.green, color.blue, 255);
-        SDL_RenderDrawPoint(ren, i, j);
-      }
+      SDL_SetRenderDrawColor(ren, color.red, color.green, color.blue, colorCode != image.transparentIndex ? 255 : 0);
+      SDL_RenderDrawPoint(ren, i, j);
     }
   }
 }
 
 int main(int argc, char** argv) {
-  //std::string gifPath = "/Users/tianyulang/code/GIF/GIFs/gif008.gif";
-  std::string gifPath = "D:\\Code\\gifPractice\\GIFs\\gif003.gif";
+  std::string gifPath = "/Users/tianyulang/code/GIF/GIFs/UnableToReadExtensionBlock/003.gif";
+//  std::string gifPath = "D:\\Code\\gifPractice\\GIFs\\gif003.gif";
   SDL_Event event;
     
   std::ifstream gifFile(gifPath, std::ios_base::in | std::ios_base::binary);
@@ -73,8 +71,8 @@ int main(int argc, char** argv) {
       return 1;
     }
 
-    SDL_SetRenderDrawBlendMode(ren, SDL_BLENDMODE_NONE);
-      
+    SDL_SetRenderDrawBlendMode(ren, SDL_BLENDMODE_BLEND);
+    
     size_t imageIndex = 0;
     while (true) {
       if (SDL_PollEvent(&event) && event.type == SDL_QUIT)
@@ -82,10 +80,14 @@ int main(int argc, char** argv) {
 
       GIFImage& image = result.images[imageIndex];
       SDL_Texture* tex = SDL_CreateTexture(ren, SDL_PIXELFORMAT_RGBA8888, SDL_TEXTUREACCESS_TARGET, image.width, image.height);
-      SDL_SetRenderTarget(ren, tex);
-      drawImage(result, image, ren);
+      SDL_SetTextureBlendMode(tex, SDL_BLENDMODE_BLEND);
       if (imageIndex == 0) {
         SDL_SetRenderTarget(ren, bgTex);
+        drawImage(result, image, ren);
+      } else {
+        SDL_SetRenderTarget(ren, tex);
+        SDL_SetRenderDrawColor(ren, 255, 255, 255, 0);
+        SDL_RenderClear(ren);
         drawImage(result, image, ren);
       }
 
