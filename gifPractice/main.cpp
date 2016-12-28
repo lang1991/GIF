@@ -11,13 +11,11 @@
 #include <fstream>
 #include <exception>
 #include <string>
-#include <thread>
-#include <chrono>
 
 #include "GIFReader.h"
 
 int main(int argc, char** argv) {
-  std::string gifPath = "/Users/tianyulang/code/GIF/GIFs/gif000.gif";
+  std::string gifPath = "/Users/tianyulang/code/GIF/GIFs/gif008.gif";
   SDL_Event event;
     
   std::ifstream gifFile(gifPath, std::ios_base::in | std::ios_base::binary);
@@ -52,8 +50,9 @@ int main(int argc, char** argv) {
       return 1;
     }
 
+    SDL_SetRenderDrawBlendMode(ren, SDL_BLENDMODE_NONE);
+      
     size_t imageIndex = 0;
-    //size_t imageIndex = result.images.size() - 1;
     while (true) {
       if (SDL_PollEvent(&event) && event.type == SDL_QUIT)
         break;
@@ -62,11 +61,11 @@ int main(int argc, char** argv) {
       
       if (image.disposal == DISPOSAL_BACKGROUND) {
         Pixel backgroundColor(0, 0, 0, false);
-        if (result.backgroundColorIndex < result.globalColormap.size()) {
+        if (result.backgroundColorIndex < result.globalColormap.size() && result.backgroundColorIndex != image.transparentIndex) {
           backgroundColor = result.globalColormap[result.backgroundColorIndex];
+          SDL_SetRenderDrawColor(ren, backgroundColor.red, backgroundColor.green, backgroundColor.blue, 255);
+          SDL_RenderClear(ren);
         }
-        SDL_SetRenderDrawColor(ren, backgroundColor.red, backgroundColor.green, backgroundColor.blue, 0);
-        SDL_RenderClear(ren);
       }
       
       std::vector<Pixel>& colorTable = image.localColormap.empty() ? result.globalColormap : image.localColormap;
@@ -83,7 +82,7 @@ int main(int argc, char** argv) {
       }
       SDL_RenderPresent(ren);
       imageIndex = (imageIndex + 1) % result.images.size();
-      std::this_thread::sleep_for(std::chrono::milliseconds(image.delay * 10));
+      SDL_Delay(image.delay * 10);
     }
     SDL_DestroyRenderer(ren);
     SDL_DestroyWindow(win);

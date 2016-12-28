@@ -65,11 +65,13 @@ int LZWState::decode(std::vector<uint8_t>& buffer, int length) {
   oc = this->oc;
   fc = this->fc;
 
-  for (;;) {
-    while (sp > this->stack) {
+  while(true) {
+    if (sp > this->stack) {
       buffer.push_back(*(--sp));
-      if ((--l) == 0)
-        goto the_end;
+      if ((--l) == 0) {
+        break;
+      }
+      continue;
     }
     c = getCode();
     if (c == this->end_code) {
@@ -109,8 +111,6 @@ int LZWState::decode(std::vector<uint8_t>& buffer, int length) {
       }
     }
   }
-  this->end_code = -1;
-the_end:
   this->sp = sp;
   this->oc = oc;
   this->fc = fc;

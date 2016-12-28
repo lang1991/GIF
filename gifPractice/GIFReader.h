@@ -84,20 +84,6 @@ struct GIFFile {
     std::cout << "Logical screen width: " << screenWidth << "\n";
     std::cout << "Logical screen height: " << screenHeight << "\n";
     std::cout << "global color table size: " << globalColormap.size() << "\n";
-    std::cout << "global color table: " << "\n";
-    for (size_t i = 0; i < globalColormap.size(); ++i) {
-      bool indent = (i % 3) == 0;
-      bool newLine = ((i + 1) % 3) == 0;
-      if (indent) {
-        std::cout << "\t";
-      }
-      globalColormap[i].print();
-      std::cout << " ";
-      if (newLine) {
-        std::cout << "\n";
-      }
-    }
-    std::cout << "\n";
     std::cout << "Background color index: " << backgroundColorIndex << "\n";
     std::cout << "Comments: \n";
     for (size_t i = 0; i < comments.size(); ++i) {
