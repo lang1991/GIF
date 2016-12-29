@@ -118,9 +118,9 @@ int LZWState::decode(std::vector<uint8_t>& buffer, int length) {
 }
 
 void LZWState::skipBadData() {
-  std::cout << "Skipping bad LZW data\n";
   char buffer[256];
   while (bs > 0) {
+    std::cout << "Skipping bad LZW data\n";
     uint32_t count = getBlock(file, buffer, bs);
     if (count != bs) {
       break;

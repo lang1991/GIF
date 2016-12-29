@@ -115,10 +115,11 @@ bool GIFReader::readImageBlock(GIFFile& result, GIFImage& image) {
     int count = lzw.decode(image.data, image.width);
     if (count != image.width) {
       lzw.skipBadData();
-      return true;
+      return false;
     }
   }
-
+  
+  lzw.skipBadData();
   result.images.emplace_back(image);
   image.reset();
   return true;
@@ -159,6 +160,9 @@ void GIFReader::readGraphicControlExtension(GIFImage& image) {
       image.disposal = DISPOSAL_NONE;
     }
     image.delay = getUnsigned(file);
+    if (image.delay < 10) {
+      image.delay = 10;
+    }
     image.transparentIndex = getByte(file);
     if (!(packed & 0x01)) { // transparent color doesn't exist
       image.transparentIndex = -1;
