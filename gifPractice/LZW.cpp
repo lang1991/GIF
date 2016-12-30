@@ -57,9 +57,6 @@ int LZWState::decode(std::vector<uint8_t>& buffer, int length) {
   int l, c, code, oc, fc;
   uint8_t *sp;
 
-  if (this->end_code < 0)
-    return 0;
-
   l = length;
   sp = this->sp;
   oc = this->oc;
