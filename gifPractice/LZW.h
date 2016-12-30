@@ -22,15 +22,15 @@ private:
   int bbits;                  ///< Number of bits left in current byte buffer
   unsigned int bbuf;          ///< Byte buffer to store the bits read from stream
 
-  int cursize;                ///< The current code size.
+  int cursize;                ///< The current code size. This should be codesize + 1 at the very beginning, since codesize does not include EOI and end code, which we need
   int curmask;
-  int codesize;               ///< Current code size - 1
+  int codesize;               ///< The code size read from LZW data block (first byte)
   int clear_code;
   int end_code;
   int newcodes;               ///< First available code
-  int top_slot;               ///< Highest code for current size
+  int top_slot;               ///< Highest code for current size, if we reach this, we need to restart and expand 
   int slot;                   ///< Last read code
-  int fc, oc;                 ///< current code and old code??????
+  int fc, oc;                 ///< first code and old code
   uint8_t *sp;                ///< stack pointer, pointing at the bottom of the stack. This stores decoded pixels(codes)
   uint8_t stack[LZW_SIZTABLE];
   uint8_t suffix[LZW_SIZTABLE];
