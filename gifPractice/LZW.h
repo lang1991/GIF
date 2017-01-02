@@ -27,13 +27,15 @@ private:
   int codesize;               ///< The code size read from LZW data block (first byte)
   int clear_code;
   int end_code;
-  int newcodes;               ///< First available code
-  int top_slot;               ///< Highest code for current size, if we reach this, we need to restart and expand 
+  int newcodes;               ///< First available code, this means the first code that is out of the dictionary
+  int top_slot;               ///< Highest code for current size. This marks the limit of the current dictionary. If we reach this, we need to restart and expand 
   int slot;                   ///< Last read code
-  int fc, oc;                 ///< first code and old code
+  int fc, oc;                 ///< first character and old code
   uint8_t *sp;                ///< stack pointer, pointing at the bottom of the stack. This stores decoded pixels(codes)
   uint8_t stack[LZW_SIZTABLE];
-  uint8_t suffix[LZW_SIZTABLE];
+  ///< suffix + prefix is an optimization technique for the dictionary lookup. 
+  ///< http://warp.povusers.org/EfficientLZW/part4.html this page explains the optimization technique
+  uint8_t suffix[LZW_SIZTABLE]; 
   uint16_t prefix[LZW_SIZTABLE];
   int bs;                     ///< Number of bytes of data in the stream. This is the first byte in the sub data block
 
