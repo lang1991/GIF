@@ -31,9 +31,9 @@ int main(int argc, char** argv) {
 //  std::string gifPath = "/Users/tianyulang/code/GIF/GIFs/InvalidColormapIndex/001.gif";
   //std::string gifPath = "/Users/tianyulang/code/GIF/GIFs/NegativeOrZeroImageSize/001.gif";
 //  std::string gifPath = "/Users/tianyulang/code/GIF/GIFs/UnableToReadExtensionBlock/003.gif";
-  //std::string gifPath = "D:\\Code\\gifPractice\\GIFs\\gif003.gif";
+  std::string gifPath = "D:\\Code\\gifPractice\\GIFs\\gif011.gif";
   //std::string gifPath = "D:\\Code\\gifPractice\\GIFs\\InvalidColormapIndex\\003.gif";
-  std::string gifPath = "D:\\Code\\gifPractice\\GIFs\\NegativeOrZeroImageSize\\002.gif";
+  //std::string gifPath = "D:\\Code\\gifPractice\\GIFs\\NegativeOrZeroImageSize\\003.gif";
   //std::string gifPath = "D:\\Code\\gifPractice\\GIFs\\UnableToReadExtensionBlock\\003.gif";
   SDL_Event event;
   std::ifstream gifFile(gifPath, std::ios_base::in | std::ios_base::binary);

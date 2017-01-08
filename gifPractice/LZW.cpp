@@ -8,12 +8,12 @@ LZWState::LZWState(std::ifstream& gifFile):
 bool LZWState::init(int codeSizeFromStream) {
   if (codeSizeFromStream < 1 || codeSizeFromStream >= LZW_MAXBITS)
     return false;
-  /* read buffer */
+  // Read buffer related
   byteBuffer = 0;
   numBitsInByte = 0;
   bytesRemaining = 0;
 
-  /* decoder */
+  // Decoder related
   codeSize = codeSizeFromStream;
   currSize = codeSize + 1;
   currMask = mask[currSize];
@@ -52,12 +52,16 @@ int LZWState::getCode() {
   return codeBuffer & currMask;
 }
 
+// This code is a modification of Steven A. Bennett's GIF decoder in 1987
+// The Stackoverflow post here: http://stackoverflow.com/questions/10450395/lzw-decompression-algorithm
+// And the GIF decompression algorithm here: https://www.eecis.udel.edu/~amer/CISC651/lzw.and.gif.explained.html
+// Are useful resources to write a GIF decoder
 int LZWState::decode(std::vector<uint8_t>& buffer, int length) {
-  int currLength = length; 
-  int c, code;
+  int currLength = length;
+  int code;
 
-
-  while(true) {
+  while (true) {
+    // If we have pixel to output, we write it out
     if (sp > stack) {
       buffer.push_back(*(--sp));
       if ((--currLength) == 0) {
@@ -65,11 +69,11 @@ int LZWState::decode(std::vector<uint8_t>& buffer, int length) {
       }
       continue;
     }
-    c = getCode();
-    if (c == endCode) {
+    code = getCode();
+    if (code == endCode) { // We are done!
       break;
     }
-    else if (c == clearCode) {
+    else if (code == clearCode) { // Clear related state to start over
       currSize = codeSize + 1;
       currMask = mask[currSize];
       dictCurrSlot = newCodeStart;
@@ -77,29 +81,52 @@ int LZWState::decode(std::vector<uint8_t>& buffer, int length) {
       firstChar = oldCode = -1;
     }
     else {
-      code = c;
-      if (code == dictCurrSlot && firstChar >= 0) {
+      // This is our first code
+      // We treat it as a special case because the process relies on the "old code"
+      if (oldCode == -1) {
+        firstChar = oldCode = code;
+        *sp++ = code;
+        continue;
+      }
+
+      int codeBackup = code;
+      
+      // The code should not jump, if a new code shows up, it must be the next slot
+      if (code > dictCurrSlot) {
+        break;
+      }
+
+      // We have a code we have not seen before!
+      // According to the algorithm, we output "the string behind code + the first character of that string"
+      // We output the first character first, in the while loop below, we output the rest of the string
+      if (code == dictCurrSlot) {
         *sp++ = firstChar;
         code = oldCode;
       }
-      else if (code >= dictCurrSlot)
-        break;
+
+      // Trace the suffix/prefix array to output the string behind a code that is not in the initial dictionary
       while (code >= newCodeStart) {
         *sp++ = suffix[code];
         code = prefix[code];
       }
-      *sp++ = code;
-      if (dictCurrSlot < dictLastSlot && oldCode >= 0) {
+
+      // Output the first character in the code
+      // This will always be in the initial dictionary
+      *sp++ = firstChar = code;
+
+      // If we still have space in the dictionary
+      // We add the code to the dictionary
+      if (dictCurrSlot < dictLastSlot) {
         suffix[dictCurrSlot] = code;
         prefix[dictCurrSlot++] = oldCode;
       }
-      firstChar = code;
-      oldCode = c;
-      if (dictCurrSlot >= dictLastSlot) {
-        if (currSize < LZW_MAXBITS) {
-          dictLastSlot <<= 1;
-          currMask = mask[++currSize];
-        }
+
+      oldCode = codeBackup;
+
+      // Expand the dictionary if we have not surpassed limit of GIF specification
+      if (dictCurrSlot >= dictLastSlot && currSize < LZW_MAXBITS) {
+        dictLastSlot <<= 1;
+        currMask = mask[++currSize];
       }
     }
   }
