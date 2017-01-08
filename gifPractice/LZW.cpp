@@ -15,7 +15,7 @@ bool LZWState::init(int codeSizeFromStream) {
 
   /* decoder */
   codeSize = codeSizeFromStream;
-  currSize = this->codeSize + 1;
+  currSize = codeSize + 1;
   currMask = mask[currSize];
   dictLastSlot = 1 << currSize;
   clearCode = 1 << codeSize;
@@ -54,15 +54,11 @@ int LZWState::getCode() {
 
 int LZWState::decode(std::vector<uint8_t>& buffer, int length) {
   int currLength = length; 
-  int c, code, oldCode, firstChar;
-  uint8_t *sp;
+  int c, code;
 
-  sp = this->sp;
-  oldCode = this->oldCode;
-  firstChar = this->firstChar;
 
   while(true) {
-    if (sp > this->stack) {
+    if (sp > stack) {
       buffer.push_back(*(--sp));
       if ((--currLength) == 0) {
         break;
@@ -70,46 +66,43 @@ int LZWState::decode(std::vector<uint8_t>& buffer, int length) {
       continue;
     }
     c = getCode();
-    if (c == this->endCode) {
+    if (c == endCode) {
       break;
     }
-    else if (c == this->clearCode) {
-      this->currSize = this->codeSize + 1;
-      this->currMask = mask[this->currSize];
-      this->dictCurrSlot = this->newCodeStart;
-      this->dictLastSlot = 1 << this->currSize;
+    else if (c == clearCode) {
+      currSize = codeSize + 1;
+      currMask = mask[currSize];
+      dictCurrSlot = newCodeStart;
+      dictLastSlot = 1 << currSize;
       firstChar = oldCode = -1;
     }
     else {
       code = c;
-      if (code == this->dictCurrSlot && firstChar >= 0) {
+      if (code == dictCurrSlot && firstChar >= 0) {
         *sp++ = firstChar;
         code = oldCode;
       }
-      else if (code >= this->dictCurrSlot)
+      else if (code >= dictCurrSlot)
         break;
-      while (code >= this->newCodeStart) {
-        *sp++ = this->suffix[code];
-        code = this->prefix[code];
+      while (code >= newCodeStart) {
+        *sp++ = suffix[code];
+        code = prefix[code];
       }
       *sp++ = code;
-      if (this->dictCurrSlot < this->dictLastSlot && oldCode >= 0) {
-        this->suffix[this->dictCurrSlot] = code;
-        this->prefix[this->dictCurrSlot++] = oldCode;
+      if (dictCurrSlot < dictLastSlot && oldCode >= 0) {
+        suffix[dictCurrSlot] = code;
+        prefix[dictCurrSlot++] = oldCode;
       }
       firstChar = code;
       oldCode = c;
-      if (this->dictCurrSlot >= this->dictLastSlot) {
-        if (this->currSize < LZW_MAXBITS) {
-          this->dictLastSlot <<= 1;
-          this->currMask = mask[++this->currSize];
+      if (dictCurrSlot >= dictLastSlot) {
+        if (currSize < LZW_MAXBITS) {
+          dictLastSlot <<= 1;
+          currMask = mask[++currSize];
         }
       }
     }
   }
-  this->sp = sp;
-  this->oldCode = oldCode;
-  this->firstChar = firstChar;
   return length - currLength;
 }
 
